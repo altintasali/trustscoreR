@@ -1,2 +1,3 @@
 # trustscoreR
+
 trustscoreR is an R package for statistically robust scoring and ranking of businesses, hospitals, or products based on review data from one or more platforms. Simple averages can be misleading—especially when sample sizes differ—so trustscoreR implements methods such as Wilson score intervals, Bayesian shrinkage, and hierarchical pooling to generate fair and uncertainty-aware ratings. The package accepts ratings and review counts from sources like Google, Trustpilot, and Yelp, and returns adjusted scores, confidence/credible intervals, and rankings. It is designed for analysts and decision-makers who need reliable insights from noisy or imbalanced review data.
