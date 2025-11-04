@@ -1,18 +1,20 @@
 Package: trustscoreR
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Compute and Visualize Trust Scores (Wilson & Bayesian)
 Version: 0.1.0
 Authors@R: c(
     person(
-      "Jane", "Doe",
-      email = "jane@example.com",
+      "Ali", "Altintas",
+      email = "altintas.ali@gmail.com",
       role = c("aut", "cre")
     )
   )
-Description: More about what it does (maybe more than one line).
-    Continuation lines should be indented.
-License: What license is it under?
+Description: Compute Wilson score lower bounds and Bayesian-adjusted ratings for features or entities, and visualize them.
+Imports:
+    ggplot2
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/altintasali/trustscoreR
 BugReports: https://github.com/altintasali/trustscoreR/issues
+RoxygenNote: 7.3.2
