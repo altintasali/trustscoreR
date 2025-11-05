@@ -1,43 +1,88 @@
-#' Bayesian Adjusted Rating (Beta-Binomial Shrinkage) for Arbitrary Scale
+#' Bayesian adjusted rating (beta-binomial shrinkage) for arbitrary scale
 #'
 #' Computes a Bayesian shrinkage estimate of a rating, adjusting for
 #' the number of reviews and a prior belief. This is useful because
 #' small numbers of reviews can produce extreme or unreliable average ratings.
 #'
-#' The shrinkage estimate is based on a Beta-Binomial model:
-#' \deqn{ \hat{\theta} = \frac{\alpha + r}{\alpha + \beta + n} }
-#' where:
-#' \itemize{
-#'   \item \eqn{r = p \cdot n} is the number of "successes" (rating converted to [0,1])
-#'   \item \eqn{\alpha = prior\_mean \cdot prior\_n}
-#'   \item \eqn{\beta = (1 - prior\_mean) \cdot prior\_n}
+#' @section Why Bayesian adjusted scores?:
+#' Raw averages are extremely sensitive when review counts are small.
+#' A feature with a single 5-star rating should not outrank another with
+#' hundreds of reviews averaging 4.8. \cr
+#' \code{bayes_adjusted()} solves this by shrinking each observed rating
+#' toward a prior value (\code{prior_mean}), with the strength of the pull
+#' controlled by \code{prior_n}. \cr
+#' High-volume items are barely affected; low-volume items are pulled
+#' toward a neutral rating until more evidence is available.
+#'
+#' @section Formula:
+#' \strong{Under the hood: Beta–Binomial shrinkage!}
+#'
+#' First, each rating is mapped to the 0-1 scale:
+#' \deqn{ p = \frac{rating - min\_score}{max\_score - min\_score} }
+#'
+#' With \eqn{n} reviews, the data contribute \eqn{r = p \cdot n} "successes".
+#'
+#' The prior is expressed as a Beta distribution with parameters:
+#' \deqn{ \alpha = prior\_mean \cdot prior\_n }
+#' \deqn{ \beta  = (1 - prior\_mean) \cdot prior\_n }
+#'
+#' Combining the prior and observed data yields a posterior mean:
+#' \deqn{
+#'   \hat{\theta}
+#'   = \frac{\alpha + r}{\alpha + \beta + n}
 #' }
 #'
+#' Intuition:
+#' \itemize{
+#'   \item If \eqn{n} is small, the prior dominates and \eqn{\hat{\theta}} stays close to \code{prior_mean}
+#'   \item As \eqn{n} grows large, \eqn{\hat{\theta}} approaches the observed average
+#' }
+#'
+#' Finally, \eqn{\hat{\theta}} is mapped back to the original rating scale.
+#'
 #' @param rating Numeric vector of observed ratings
-#' @param n Numeric vector of number of reviews (same length as rating)
+#' @param n Numeric vector of number of reviews (same length as \code{rating})
 #' @param min_score Minimum rating (default = 1)
 #' @param max_score Maximum rating (default = 5)
-#' @param prior_mean Prior expected rating on the same scale as `rating`.
+#' @param prior_mean Prior expected rating on the same scale as \code{rating}.
 #'   Represents the rating you would trust if no reviews were available.
 #'   Default is the midpoint of the scale.
-#'   Example: on a 1–5 scale, prior_mean = 3.5 represents a neutral prior.
-#' @param prior_n Prior strength (pseudo-count). Interpreted as the **minimum trusted number of reviews**.
-#'   It controls how strongly the prior pulls small-sample ratings toward `prior_mean`.
-#'   Ratings based on fewer reviews than `prior_n` are strongly shrunk; ratings with many reviews are minimally affected.
+#' @param prior_n Prior strength (pseudo-count). Interpreted as the
+#'   \emph{minimum trusted number of reviews}. Ratings based on fewer
+#'   reviews than \code{prior_n} are strongly shrunk; ratings with many reviews
+#'   are minimally affected.
 #'
 #' @return Numeric vector of Bayesian-adjusted ratings on the original scale
 #'
 #' @examples
-#' # 1-5 scale
-#' ratings <- c(5, 1.5, 4)
-#' n_reviews <- c(300, 10, 2)
-#' bayes_adjusted(ratings, n_reviews, min_score = 1, max_score = 5)
+#' # Example 1: Standard 1–5 rating scale
+#' ratings <- c(5, 2, 4.5, 5)
+#' n_reviews <- c(1, 5, 30, 500)
 #'
-#' # 0-10 scale with custom prior
-#' ratings2 <- c(8, 3, 5)
-#' n_reviews2 <- c(100, 20, 5)
-#' bayes_adjusted(ratings2, n_reviews2, min_score = 0, max_score = 10,
+#' # Raw averages vs Bayesian shrinkage
+#' data.frame(
+#'   rating = ratings,
+#'   n = n_reviews,
+#'   bayes = bayes_adjusted(ratings, n_reviews)
+#' )
+#'
+#' # The item with 1 review (5 stars) is pulled downward strongly,
+#' # while the item with 500 reviews remains almost unchanged.
+#'
+#' # Example 2: Custom 0–10 scale with a neutral prior (mean = 5) and stronger shrinkage
+#' ratings2 <- c(10, 7, 2)
+#' n_reviews2 <- c(2, 20, 500)
+#'
+#' bayes_adjusted(ratings2, n_reviews2,
+#'                min_score = 0, max_score = 10,
 #'                prior_mean = 5, prior_n = 30)
+#'
+#' # Items with very few reviews are pulled strongly toward 5 (neutral),
+#' # while the item with 500 reviews remains close to its observed average.
+#'
+#' @seealso
+#' \code{\link{wilson_score}} for conservative, uncertainty-aware ranking of ratings
+#' based on the Wilson confidence interval.
 #'
 #' @export
 bayes_adjusted <- function(rating, n,
@@ -67,7 +112,7 @@ bayes_adjusted <- function(rating, n,
   post <- (a0 + p * n) / (a0 + b0 + n)
 
   # convert back to original scale
-  adjusted_score <- post * (max_score - min_score) + min_score
+  score <- post * (max_score - min_score) + min_score
 
-  return(adjusted_score)
+  return(score)
 }
