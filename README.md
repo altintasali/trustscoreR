@@ -1,4 +1,3 @@
-
 # trustscoreR
 
 <!-- badges: start -->
@@ -8,7 +7,7 @@
 
 ## Installation
 
-You can install the development version of trustscoreR from [GitHub](https://github.com/) with:
+You can install the development version of trustscoreR from [GitHub](https://github.com/altintasali/trustscoreR) with:
 
 ``` r
 # install.packages("pak")
@@ -21,6 +20,31 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(trustscoreR)
-## basic example code
+
+company <- LETTERS[1:3]
+google_rating <- c(4.2, 4.3, 3.9 )
+review_number <- c(200, 60,  1200)
+
+df <- data.frame(company, google_rating, review_number)
+
+adjusted_score <- trustscore(
+  df,
+  feature_col = "company",
+  rating_col = "google_rating",
+  n_col = "review_number",
+  min_score = 1,
+  max_score = 5,
+  conf = 0.95
+)
+
+print(adjusted_score)
 ```
+
+| # | company | google_rating  | review_number  | wilson   | bayes    |
+|--:|--------:|---------------:|---------------:|---------:|---------:|
+| 1 | A       | 4.2            | 200            | 3.956579 | 4.090909 |
+| 2 | B       | 4.3            | 60             | 3.840836 | 3.975000 |
+| 3 | C       | 3.9            | 1200           | 3.796195 | 3.885246 |
+
+
 
