@@ -10,8 +10,6 @@ Authors@R: c(
     )
   )
 Description: Compute Wilson score lower bounds and Bayesian-adjusted ratings for features or entities, and visualize them.
-Imports:
-    ggplot2
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

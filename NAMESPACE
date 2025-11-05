@@ -2,8 +2,6 @@
 
 export(bayes_adjusted)
 export(normalize_score)
-export(plot_trustscore_base)
-export(rank_trustscore)
 export(trustscore)
 export(wilson_score)
 importFrom(stats,qnorm)
